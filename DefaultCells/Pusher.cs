@@ -4,7 +4,7 @@ namespace PublicAssembly.DefaultCells
     {
         public override string Name => "Pusher";
         public override string Description => "Moves towards faced direction every step";
-        public override string SpriteName => "Pusher";
+        public override string SpriteName => "Pusher.png";
         public override void Step()
         {
             Push();

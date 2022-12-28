@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace PublicAssembly
@@ -9,7 +8,10 @@ namespace PublicAssembly
         public Vector2Int Size { get; }
         public Cell? GetCell(Vector2Int position);
         public Cell? GetCell(int x, int y);
-        public Cell? CreateCell(Type type, Direction direction, Vector2Int position, Vector2Int? visualStartingPosition = null);
+
+        public Cell? CreateCell(Type type, Direction direction, Vector2Int position,
+            Vector2Int? visualStartingPosition = null, Direction? visualStartDirection = null);
+
         public void DeleteCell(Vector2Int position);
         public void DeleteCell(Cell cell);
 

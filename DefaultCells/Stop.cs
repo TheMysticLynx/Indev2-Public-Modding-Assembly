@@ -4,7 +4,7 @@ namespace PublicAssembly.DefaultCells
     {
         public override string Name => "Stop";
         public override string Description => "Stops cells from moving.";
-        public override string SpriteName => "Stop";
+        public override string SpriteName => "Stop.png";
 
         public override bool Push(Cell originalCaller, Cell lastCaller, Direction direction, int bias)
         {

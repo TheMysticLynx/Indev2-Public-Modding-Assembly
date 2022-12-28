@@ -8,6 +8,7 @@ namespace PublicAssembly
 {
     public abstract class Cell : MonoBehaviour
     {
+        public LinkedListNode<Cell> LinkedListNode { get; set; }
         private Vector2Int _position;
         private Direction _facedDirection;
         private int _rotation;
@@ -22,15 +23,16 @@ namespace PublicAssembly
             get => _position;
             set
             {
+                var oldPosition = _position;
                 _position = value;
-                PositionChanged?.Invoke(value);
+                PositionChanged?.Invoke(value, _position);
             }
         }
         // Cached direction from _rotation
         public Direction FacedDirection
         {
             get => _facedDirection;
-            set
+            private set
             {
                 _facedDirection = value;
                 DirectionChanged?.Invoke(value);
@@ -48,7 +50,7 @@ namespace PublicAssembly
 
         public IStateManager StateManager { get; private set; }
 
-        public event Action<Vector2Int>? PositionChanged;
+        public event Action<Vector2Int, Vector2Int>? PositionChanged;
         public event Action<Direction>? DirectionChanged;
 
         public bool Push(Direction? direction = null)
@@ -59,15 +61,24 @@ namespace PublicAssembly
 
         public virtual bool Push(Cell? originalCaller, Cell? lastCaller, Direction direction, int bias)
         {
-            if (originalCaller == this && lastCaller != this)
-                return true;
             Vector2Int target = Position + direction.ToVector2Int();
+            if (originalCaller == this && lastCaller != this)
+            {
+                Position = target;
+            }
 
             if (!StateManager.InBounds(target))
                 return false;
 
             var cell = StateManager.GetCell(target);
-            if (cell is not null) return cell.Push(originalCaller, this, _facedDirection, bias);
+            if (cell is not null)
+            {
+                bool success = cell.Push(originalCaller, this, _facedDirection, bias);
+                if(success)
+                    Position = target;
+                return success;
+            }
+
             Position = target;
             return true;
         }
@@ -94,19 +105,28 @@ namespace PublicAssembly
 
         public void UpdatePosition(float animationTime)
         {
+            StopAllCoroutines();
             StartCoroutine(UpdatePositionCoroutine(animationTime));
+        }
+
+        private void OnDestroy()
+        {
+            StopAllCoroutines();
         }
 
         private IEnumerator UpdatePositionCoroutine(float animationTime)
         {
             Vector2 target = Position;
             Vector2 start = transform.position;
+            var startingAngle = transform.rotation;
+            var endingAngle = Quaternion.Euler(0, 0, Rotation * -90);
             float time = 0;
             while (time < animationTime)
             {
                 time += Time.deltaTime;
                 transform.position = Vector2.Lerp(start, target, time / animationTime);
-                yield return new WaitForSeconds(.05f);
+                transform.rotation = Quaternion.Lerp(startingAngle, endingAngle, time / animationTime);
+                yield return null;
             }
             transform.position = target;
         }
